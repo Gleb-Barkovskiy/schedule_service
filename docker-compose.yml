@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_URL=sqlite+aiosqlite:///app/db.sqlite3
+    volumes:
+      - .:/app
