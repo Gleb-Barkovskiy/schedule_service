@@ -2,6 +2,9 @@ import asyncio
 from contextlib import asynccontextmanager
 import uvicorn
 import logging
+
+from alembic import command
+from alembic.config import Config
 from fastapi import FastAPI
 from app.core.config import settings
 from app.parser import scrape_and_populate
@@ -29,8 +32,14 @@ async def periodic_scrape_and_populate():
         await asyncio.sleep(settings.fetch_updates_interval)
 
 
+async def run_migrations():
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await run_migrations()
     task = asyncio.create_task(periodic_scrape_and_populate())
     yield
     task.cancel()
