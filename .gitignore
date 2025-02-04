@@ -1,4 +1,4 @@
 *.env
 .idea
-alembic/*.db
-alembic/local_*.ini
+*.sqlite3
+*.db
