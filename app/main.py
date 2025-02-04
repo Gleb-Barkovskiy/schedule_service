@@ -2,9 +2,12 @@ import asyncio
 from contextlib import asynccontextmanager
 import uvicorn
 import logging
+
+from alembic import command
 from fastapi import FastAPI
+from uvicorn import Config
+
 from app.core.config import settings
-from app.core.models import db_helper, Base
 from app.parser import scrape_and_populate
 from app.api_v1 import router as router_v1
 
@@ -32,8 +35,6 @@ async def periodic_scrape_and_populate():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with db_helper.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
     task = asyncio.create_task(periodic_scrape_and_populate())
     yield
     task.cancel()
