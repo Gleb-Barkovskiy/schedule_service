@@ -6,6 +6,7 @@ from app.core.models import Course, Group, Lesson, Base
 
 T = TypeVar("T", bound=Base)
 
+
 class CRUDBase:
     def __init__(self, model: Type[T]):
         self.model = model

@@ -2,6 +2,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 from .mixins import CourseRelationMixin, GroupRelationMixin
 
+
 class Lesson(CourseRelationMixin, GroupRelationMixin, Base):
     __tablename__ = "lessons"
 

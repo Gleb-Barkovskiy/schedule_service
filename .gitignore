@@ -1,2 +1,4 @@
 *.env
 .idea
+alembic/*.db
+alembic/local_*.ini

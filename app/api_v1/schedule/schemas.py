@@ -1,18 +1,23 @@
 from pydantic import BaseModel
 from typing import Optional
 
+
 class CourseCreate(BaseModel):
     course_number: str
 
+
 class CourseUpdate(BaseModel):
     course_number: Optional[str] = None
+
 
 class GroupCreate(BaseModel):
     group_number: str
     course_id: int
 
+
 class GroupUpdate(BaseModel):
     group_number: Optional[str] = None
+
 
 class LessonCreate(BaseModel):
     weekday: str
@@ -24,6 +29,7 @@ class LessonCreate(BaseModel):
     remarks: str
     course_id: int
     group_id: int
+
 
 class LessonUpdate(BaseModel):
     weekday: Optional[str] = None

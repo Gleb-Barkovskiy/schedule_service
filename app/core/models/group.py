@@ -3,6 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 from .mixins import CourseRelationMixin
 
+
 class Group(CourseRelationMixin, Base):
     __tablename__ = "groups"
 

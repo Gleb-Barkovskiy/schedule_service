@@ -4,9 +4,11 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, declared_attr, relationship
 from sqlalchemy.testing.schema import mapped_column
 
+
 if TYPE_CHECKING:
     from .group import Group
     from .course import Course
+
 
 class GroupRelationMixin:
     _group_id_nullable: bool = False

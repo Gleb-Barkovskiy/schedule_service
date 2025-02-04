@@ -12,10 +12,13 @@ class Settings(BaseSettings):
     db_url: str = os.getenv("DB_URL", f"sqlite+aiosqlite:///{BASE_DIR}/db.sqlite3")
     db_echo: bool = False
 
-    resource_url: str = os.getenv("RESOURCE_URL", "https://mmf.bsu.by/ru/raspisanie-zanyatij/")
-    fetch_updates_interval = 12 * 60 * 60
+    resource_url: str = os.getenv(
+        "RESOURCE_URL", "https://mmf.bsu.by/ru/raspisanie-zanyatij/"
+    )
+    fetch_updates_interval: int = 12 * 60 * 60
 
     class Config:
         env_file = ".env"
+
 
 settings = Settings()

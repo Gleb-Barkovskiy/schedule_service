@@ -9,6 +9,7 @@ from app.api_v1.schedule.crud import course_crud, group_crud, lesson_crud
 
 logger = logging.getLogger(__name__)
 
+
 async def fetch_html(url: str) -> BeautifulSoup:
     async with httpx.AsyncClient() as client:
         try:
@@ -19,12 +20,15 @@ async def fetch_html(url: str) -> BeautifulSoup:
             logger.error(f"Failed to fetch HTML from {url}: {e}")
             raise
 
+
 async def parse_main_page(url):
     try:
         soup = await fetch_html(url)
         content_area = soup.find("section", class_="content-area default-format")
         if not content_area:
-            raise ValueError("Section with class 'content-area default-format' not found.")
+            raise ValueError(
+                "Section with class 'content-area default-format' not found."
+            )
         links = []
         a_count = 0
         for a_tag in content_area.find_all("a"):
@@ -37,6 +41,7 @@ async def parse_main_page(url):
     except Exception as e:
         logger.error(f"Error parsing main page: {e}")
         raise
+
 
 async def parse_nested_links(links):
     updated_links = []
@@ -54,8 +59,11 @@ async def parse_nested_links(links):
                 groups.append({"group": title, "url": a_tag["href"]})
             updated_links.append({"course": course_title, "groups": groups})
         except Exception as e:
-            logger.error(f"Error parsing nested links for course {link_info['course']}: {e}")
+            logger.error(
+                f"Error parsing nested links for course {link_info['course']}: {e}"
+            )
     return updated_links
+
 
 async def parse_schedule_table(link_info):
     for group in link_info.get("groups", []):
@@ -86,46 +94,73 @@ async def parse_schedule_table(link_info):
                             subject = subject_teachers_text
                             teacher = None
                 row = {
-                    "weekday": tr.find("td", class_="weekday").text.strip() if tr.find("td", class_="weekday") else "",
-                    "time": tr.find("td", class_="time").text.strip() if tr.find("td", class_="time") else "",
-                    "remarks": tr.find("td", class_="remarks").text.strip() if tr.find("td", class_="remarks") else "",
+                    "weekday": (
+                        tr.find("td", class_="weekday").text.strip()
+                        if tr.find("td", class_="weekday")
+                        else ""
+                    ),
+                    "time": (
+                        tr.find("td", class_="time").text.strip()
+                        if tr.find("td", class_="time")
+                        else ""
+                    ),
+                    "remarks": (
+                        tr.find("td", class_="remarks").text.strip()
+                        if tr.find("td", class_="remarks")
+                        else ""
+                    ),
                     "subject": subject,
                     "teacher": teacher,
-                    "lecture_practice": tr.find("td", class_="lecture-practice").text.strip()
-                    if tr.find("td", class_="lecture-practice")
-                    else "",
-                    "room": tr.find("td", class_="room").text.strip() if tr.find("td", class_="room") else "",
+                    "lecture_practice": (
+                        tr.find("td", class_="lecture-practice").text.strip()
+                        if tr.find("td", class_="lecture-practice")
+                        else ""
+                    ),
+                    "room": (
+                        tr.find("td", class_="room").text.strip()
+                        if tr.find("td", class_="room")
+                        else ""
+                    ),
                 }
                 schedule.append(row)
             group["schedule"] = schedule
             del group["url"]
         except Exception as e:
-            logger.error(f"Error parsing schedule table for group {group['group']}: {e}")
+            logger.error(
+                f"Error parsing schedule table for group {group['group']}: {e}"
+            )
+
 
 async def insert_data_to_db(data, session: AsyncSession):
     for course_data in data:
         try:
-            course = await course_crud.create(session, {"course_number": course_data["course"]})
+            course = await course_crud.create(
+                session, {"course_number": course_data["course"]}
+            )
             for group_data in course_data.get("groups", []):
-                group = await group_crud.create(session, {
-                    "course_id": course.id,
-                    "group_number": group_data["group"]
-                })
+                group = await group_crud.create(
+                    session,
+                    {"course_id": course.id, "group_number": group_data["group"]},
+                )
                 for lesson_data in group_data.get("schedule", []):
-                    await lesson_crud.create(session, {
-                        "course_id": course.id,
-                        "group_id": group.id,
-                        "weekday": lesson_data["weekday"],
-                        "time": lesson_data["time"],
-                        "subject": lesson_data["subject"],
-                        "teacher": lesson_data["teacher"],
-                        "lecture_practice": lesson_data["lecture_practice"],
-                        "room": lesson_data["room"],
-                        "remarks": lesson_data["remarks"],
-                    })
+                    await lesson_crud.create(
+                        session,
+                        {
+                            "course_id": course.id,
+                            "group_id": group.id,
+                            "weekday": lesson_data["weekday"],
+                            "time": lesson_data["time"],
+                            "subject": lesson_data["subject"],
+                            "teacher": lesson_data["teacher"],
+                            "lecture_practice": lesson_data["lecture_practice"],
+                            "room": lesson_data["room"],
+                            "remarks": lesson_data["remarks"],
+                        },
+                    )
         except Exception as e:
             logger.error(f"Error inserting data into the database: {e}")
             raise
+
 
 async def scrape_and_populate():
     main_url = settings.resource_url
