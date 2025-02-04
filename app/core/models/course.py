@@ -9,5 +9,4 @@ class Course(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     course_number: Mapped[str] = mapped_column(String(5))
 
-    # Relationship with Group
     groups = relationship("Group", back_populates="course")

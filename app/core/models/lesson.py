@@ -14,6 +14,5 @@ class Lesson(CourseRelationMixin, GroupRelationMixin, Base):
     room: Mapped[str | None] = mapped_column()
     remarks: Mapped[str | None] = mapped_column()
 
-    # Relationships
     group = relationship("Group", back_populates="lessons")
-    course = relationship("Course", back_populates=None)  # This is handled by the mixin
+    course = relationship("Course", back_populates=None)

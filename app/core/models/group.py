@@ -9,7 +9,5 @@ class Group(CourseRelationMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     group_number: Mapped[str] = mapped_column(String(5))
 
-    # Relationship with Course
     course = relationship("Course", back_populates="groups")
-    # Relationship with Lesson
     lessons = relationship("Lesson", back_populates="group")

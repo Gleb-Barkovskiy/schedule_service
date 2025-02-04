@@ -1,9 +1,7 @@
-from sqlalchemy import Row, RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
-from typing import Optional, Type, TypeVar, Any, Sequence
-
+from typing import Optional, Type, TypeVar, Sequence, Dict, Any
 from app.core.models import Course, Group, Lesson, Base
 
 T = TypeVar("T", bound=Base)
@@ -13,11 +11,15 @@ class CRUDBase:
         self.model = model
 
     async def get(self, db: AsyncSession, id: int) -> Optional[T]:
-        result = await db.get(self.model, id)
-        return result
+        return await db.get(self.model, id)
 
-    async def get_all(self, db: AsyncSession) -> Sequence[Row[Any] | RowMapping | Any]:
+    async def get_all(self, db: AsyncSession) -> Sequence[T]:
         result = await db.execute(select(self.model))
+        return result.scalars().all()
+
+    async def search(self, db: AsyncSession, filters: Dict[str, Any]) -> Sequence[T]:
+        query = select(self.model).filter_by(**filters)
+        result = await db.execute(query)
         return result.scalars().all()
 
     async def create(self, db: AsyncSession, obj_in: dict) -> Optional[T]:
@@ -25,12 +27,12 @@ class CRUDBase:
         db.add(obj)
         try:
             await db.commit()
+            await db.refresh(obj)
+            return obj
         except IntegrityError as e:
             await db.rollback()
             print(f"IntegrityError: {e.orig}")
             return None
-        await db.refresh(obj)
-        return obj
 
     async def update(self, db: AsyncSession, db_obj: T, obj_in: dict) -> T:
         for key, value in obj_in.items():
